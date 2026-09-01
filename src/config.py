@@ -15,7 +15,9 @@ KAFKA_CONSUMER_GROUP = os.environ.get("KAFKA_CONSUMER_GROUP", "heartbeat-consume
 
 # --- PostgreSQL ---
 POSTGRES_HOST = os.environ.get("POSTGRES_HOST", "localhost")
-POSTGRES_PORT = int(os.environ.get("POSTGRES_PORT", "5432"))
+# 5434, not the Postgres default 5432, to avoid clashing with other local/
+# containerized Postgres instances - see docker-compose.yml.
+POSTGRES_PORT = int(os.environ.get("POSTGRES_PORT", "5434"))
 POSTGRES_DB = os.environ.get("POSTGRES_DB", "heartbeat_monitoring")
 POSTGRES_USER = os.environ.get("POSTGRES_USER", "postgres")
 POSTGRES_PASSWORD = os.environ.get("POSTGRES_PASSWORD", "postgres")

@@ -1,0 +1,58 @@
+# Local development stack for the heartbeat monitoring pipeline.
+# Run `docker-compose up -d`, then run the producer and consumer
+# (src/kafka_producer.py, src/kafka_consumer.py) from the host machine.
+
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.1
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: confluentinc/cp-kafka:7.6.1
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: heartbeat_monitoring
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      # Host port 5434 (not 5432) to avoid clashing with any other local
+      # or containerized Postgres already running on this machine.
+      - "5434:5432"
+    volumes:
+      # Postgres auto-runs any *.sql found here exactly once, on first init.
+      - ./sql/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+      - postgres_data:/var/lib/postgresql/data
+
+  # Optional (brief's recommended dashboard option). Reads directly from
+  # Postgres; provisioning config lives under dashboard/grafana/.
+  grafana:
+    image: grafana/grafana:11.1.0
+    depends_on:
+      - postgres
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - ./dashboard/grafana/provisioning:/etc/grafana/provisioning
+      - grafana_data:/var/lib/grafana
+
+volumes:
+  postgres_data:
+  grafana_data:

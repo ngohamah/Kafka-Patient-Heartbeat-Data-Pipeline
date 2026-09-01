@@ -1,0 +1,52 @@
+Sample end-to-end run against the docker-compose stack
+(captured 2026-09-01; see implementationmap.md Phase 6)
+
+$ docker compose up -d
+ Container dem10-zookeeper-1  Started
+ Container dem10-kafka-1      Started
+ Container dem10-postgres-1   Started
+ Container dem10-grafana-1    Started
+
+$ python -c "from src.kafka_producer import run_producer; run_producer(num_ticks=5, interval_seconds=0.2)"
+2026-09-01 16:40:00,347 | INFO | src.kafka_producer | Starting heartbeat producer for 10 customers -> topic 'heartbeat-readings'
+2026-09-01 16:40:00,348 | INFO | src.kafka_producer | Sent 10 reading(s) on tick 0
+2026-09-01 16:40:00,550 | INFO | src.kafka_producer | Sent 10 reading(s) on tick 1
+2026-09-01 16:40:00,755 | INFO | src.kafka_producer | Sent 10 reading(s) on tick 2
+2026-09-01 16:40:00,961 | INFO | src.kafka_producer | Sent 10 reading(s) on tick 3
+2026-09-01 16:40:01,166 | INFO | src.kafka_producer | Sent 10 reading(s) on tick 4
+2026-09-01 16:40:01,369 | INFO | src.kafka_producer | Producer flushed and closed after 5 tick(s)
+
+$ python -c "from src.kafka_consumer import run_consumer; run_consumer(num_messages=50, batch_size=20, batch_interval_seconds=2)"
+2026-09-01 16:40:07,108 | INFO | src.db | Opened PostgreSQL connection to localhost:5434/heartbeat_monitoring
+2026-09-01 16:40:07,108 | INFO | src.kafka_consumer | Starting heartbeat consumer on topic 'heartbeat-readings' (group=heartbeat-consumer-group)
+2026-09-01 16:40:11,191 | INFO | src.db | Inserted 1 reading(s) into heartbeat_readings
+2026-09-01 16:40:11,191 | WARNING | src.kafka_consumer | Anomalous reading stored for CUST-002: heart_rate=244 (outside expected range)
+2026-09-01 16:40:11,192 | WARNING | src.kafka_consumer | Anomalous reading stored for CUST-010: heart_rate=0 (outside expected range)
+2026-09-01 16:40:11,194 | INFO | src.db | Inserted 20 reading(s) into heartbeat_readings
+2026-09-01 16:40:11,195 | INFO | src.db | Inserted 20 reading(s) into heartbeat_readings
+2026-09-01 16:40:11,196 | INFO | src.db | Inserted 9 reading(s) into heartbeat_readings
+2026-09-01 16:40:11,212 | INFO | src.kafka_consumer | Consumer closed after processing 50 message(s)
+2026-09-01 16:40:11,213 | INFO | src.db | Closed PostgreSQL connection
+
+$ docker exec dem10-postgres-1 psql -U postgres -d heartbeat_monitoring \
+    -c "SELECT count(*) AS total, count(*) FILTER (WHERE is_anomalous) AS anomalies FROM heartbeat_readings;"
+ total | anomalies
+-------+-----------
+    50 |         2
+(1 row)
+
+$ docker exec dem10-postgres-1 psql -U postgres -d heartbeat_monitoring \
+    -c "SELECT customer_id, reading_time, heart_rate, is_anomalous FROM heartbeat_readings ORDER BY reading_time DESC LIMIT 5;"
+ customer_id |         reading_time          | heart_rate | is_anomalous
+-------------+-------------------------------+------------+--------------
+ CUST-010    | 2026-09-01 14:40:01.166203+00 |         73 | f
+ CUST-009    | 2026-09-01 14:40:01.1662+00   |         66 | f
+ CUST-008    | 2026-09-01 14:40:01.166197+00 |         78 | f
+ CUST-007    | 2026-09-01 14:40:01.166192+00 |         82 | f
+ CUST-006    | 2026-09-01 14:40:01.166186+00 |         70 | f
+(5 rows)
+
+Note: this text transcript stands in for a GUI screenshot, since this
+environment is CLI-only. If you'd like actual screenshots for the
+deliverable, run the same commands locally and capture your terminal/
+pgAdmin window - the output should look identical to the above.

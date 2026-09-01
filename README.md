@@ -4,9 +4,24 @@ A small data-engineering pipeline that simulates heart-rate readings for a
 set of customers, streams them through Kafka, validates them, and stores
 them in PostgreSQL for querying and (optionally) dashboarding.
 
-> Full setup instructions, architecture diagram, and screenshots are added
-> as the corresponding pipeline stages are built — see
-> [implementationmap.md](implementationmap.md) for the current build phase.
+## Architecture
+
+![Architecture diagram](docs/architecture.svg)
+
+1. **Data Simulator** (`src/data_generator.py`) invents a realistic heart-rate
+   reading per customer on a timer.
+2. **Kafka Producer** (`src/kafka_producer.py`) streams each reading onto the
+   `heartbeat-readings` topic as it's generated.
+3. **Kafka Consumer** (`src/kafka_consumer.py` + `src/validation.py`) reads
+   each message, flags anything medically implausible (below 30 or above 220
+   beats per minute), and batches everything into Postgres.
+4. **PostgreSQL** (`sql/schema.sql`) keeps a permanent, indexed record of
+   every reading, flagged readings included.
+5. **Grafana** (optional, via `docker-compose.yml`) can chart the stored data.
+
+A message that can't even be read (bad JSON, missing fields) is dropped and
+logged with the reason — everything else is kept and traced. See
+`docs/sample_run_output.txt` for a captured end-to-end run.
 
 ## What this system does (plain language)
 
@@ -40,7 +55,7 @@ docker-compose.yml   Local Kafka + PostgreSQL (+ Grafana) stack
 ## Prerequisites
 
 - Python 3.11+
-- Docker and Docker Compose (to run Kafka + PostgreSQL locally)
+- Docker and Docker Compose (to run Kafka + PostgreSQL + Grafana locally)
 
 ## Setup (developer)
 
@@ -56,10 +71,47 @@ pip install -r requirements-dev.txt
 docker-compose up -d
 ```
 
+This starts Zookeeper, Kafka, PostgreSQL, and Grafana. PostgreSQL is exposed
+on **host port 5434** (not the default 5432) to avoid clashing with any other
+Postgres already running on your machine; `src/config.py` already points at
+5434 by default. The database schema (`sql/schema.sql`) is applied
+automatically the first time the Postgres container starts.
+
+## Running the pipeline
+
+In one terminal, start the producer (streams readings continuously until you
+stop it with Ctrl+C):
+
+```bash
+python -m src.kafka_producer
+```
+
+In another terminal, start the consumer (reads, validates, and stores
+readings continuously until you stop it with Ctrl+C):
+
+```bash
+python -m src.kafka_consumer
+```
+
+Query what landed in Postgres:
+
+```bash
+docker exec -it dem10-postgres-1 psql -U postgres -d heartbeat_monitoring \
+  -c "SELECT * FROM heartbeat_readings ORDER BY reading_time DESC LIMIT 10;"
+```
+
+(Optional) open Grafana at http://localhost:3000 (login `admin` / `admin`) to
+build charts against the `heartbeat_readings` table.
+
+Application logs (including every dropped or flagged reading, with why) are
+written to `logs/app.log`.
+
 ## Running tests and lint
 
 ```bash
-pytest
+pytest        # unit tests always run; the integration test in
+              # tests/test_integration_pipeline.py auto-skips unless the
+              # docker-compose stack above is up
 ruff check .
 ```
 

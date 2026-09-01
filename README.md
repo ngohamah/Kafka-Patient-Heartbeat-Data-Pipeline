@@ -100,8 +100,13 @@ docker exec -it dem10-postgres-1 psql -U postgres -d heartbeat_monitoring \
   -c "SELECT * FROM heartbeat_readings ORDER BY reading_time DESC LIMIT 10;"
 ```
 
-(Optional) open Grafana at http://localhost:3000 (login `admin` / `admin`) to
-build charts against the `heartbeat_readings` table.
+(Optional) open Grafana at http://localhost:3000 (login `admin` / `admin` —
+a local-dev-only default, not meant for a real deployment) to see the
+pre-provisioned **"Customer Heart Rate Monitoring — Overview"** dashboard:
+an average-heart-rate trend line with a shaded normal-range band, a live
+count of anomalous readings, and a table of the anomalies behind that count.
+It's provisioned automatically from `dashboard/grafana/provisioning/` — no
+manual setup needed.
 
 Application logs (including every dropped or flagged reading, with why) are
 written to `logs/app.log`.

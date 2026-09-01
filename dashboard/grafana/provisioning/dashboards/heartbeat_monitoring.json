@@ -1,0 +1,125 @@
+{
+  "title": "Customer Heart Rate Monitoring — Overview",
+  "uid": "heartbeat-monitoring-overview",
+  "tags": ["heartbeat", "monitoring"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "10s",
+  "time": { "from": "now-1h", "to": "now" },
+  "panels": [
+    {
+      "id": 1,
+      "type": "timeseries",
+      "title": "Average Customer Heart Rate Over Time",
+      "description": "The average heart rate across all customers, minute by minute. The green band is the normal range (30-220 beats per minute); red means the average has moved outside what's physiologically expected.",
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 0 },
+      "datasource": { "type": "postgres", "uid": "heartbeat-postgres" },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "time_series",
+          "rawSql": "SELECT date_trunc('minute', reading_time) AS time, avg(heart_rate) AS \"Average heart rate\" FROM heartbeat_readings WHERE $__timeFilter(reading_time) GROUP BY 1 ORDER BY 1"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {
+            "axisLabel": "Beats per minute (bpm)",
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 0,
+            "thresholdsStyle": { "mode": "area" }
+          },
+          "color": { "mode": "fixed", "fixedColor": "#2a78d6" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": null, "color": "#d03b3b" },
+              { "value": 30, "color": "#0ca30c" },
+              { "value": 220, "color": "#d03b3b" }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "single" }
+      }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Anomalous Readings In Selected Time Range",
+      "description": "Count of readings flagged as medically implausible (below 30 or above 220 bpm) in the current time window. Zero is good.",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 10 },
+      "datasource": { "type": "postgres", "uid": "heartbeat-postgres" },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawSql": "SELECT count(*) AS \"Anomalous readings\" FROM heartbeat_readings WHERE is_anomalous = true AND $__timeFilter(reading_time)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": null, "color": "#0ca30c" },
+              { "value": 1, "color": "#d03b3b" }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value_and_name"
+      }
+    },
+    {
+      "id": 3,
+      "type": "table",
+      "title": "Most Recent Anomalous Readings (Detail)",
+      "description": "The customers and readings behind the count above, most recent first.",
+      "gridPos": { "h": 10, "w": 16, "x": 8, "y": 10 },
+      "datasource": { "type": "postgres", "uid": "heartbeat-postgres" },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawSql": "SELECT reading_time AS \"Time\", customer_id AS \"Customer\", heart_rate AS \"Heart rate (bpm)\" FROM heartbeat_readings WHERE is_anomalous = true AND $__timeFilter(reading_time) ORDER BY reading_time DESC LIMIT 50"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "none" },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Heart rate (bpm)" },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    { "value": null, "color": "#d03b3b" },
+                    { "value": 30, "color": "#0ca30c" },
+                    { "value": 220, "color": "#d03b3b" }
+                  ]
+                }
+              },
+              { "id": "custom.cellOptions", "value": { "type": "color-background" } }
+            ]
+          }
+        ]
+      },
+      "options": {}
+    }
+  ]
+}

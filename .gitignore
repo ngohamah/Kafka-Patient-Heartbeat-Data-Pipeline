@@ -1,0 +1,37 @@
+# Planning doc (living document, never committed)
+implementationmap.md
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Logs (observability output — never delete/overwrite without asking the user)
+logs/
+*.log
+
+# Environment / secrets
+.env
+.env.*
+
+# Data artifacts
+data/raw/
+data/processed/
+*.sqlite3
+
+# Docker
+volumes/
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/

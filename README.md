@@ -116,7 +116,7 @@ written to `logs/app.log`.
 **Grafana dashboard** — population trend, anomaly count, anomaly detail table,
 and the per-customer drill-down:
 
-![Grafana dashboard](docs/screenshots/Screenshot%202026-09-02%20at%2003.32.35.png)
+![Grafana dashboard](docs/screenshots/grafana-dashboard.png)
 
 See also `docs/sample_run_output.txt` for a captured terminal run of the
 producer, consumer, and a `psql` query showing successful ingestion.

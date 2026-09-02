@@ -23,7 +23,7 @@ POSTGRES_USER = os.environ.get("POSTGRES_USER", "postgres")
 POSTGRES_PASSWORD = os.environ.get("POSTGRES_PASSWORD", "postgres")
 
 # --- Synthetic data generation ---
-NUM_CUSTOMERS = int(os.environ.get("NUM_CUSTOMERS", "10"))
+NUM_CUSTOMERS = int(os.environ.get("NUM_CUSTOMERS", "10")) # number of customer reading produced at a time.
 NORMAL_HEART_RATE_MEAN = 75
 NORMAL_HEART_RATE_STDDEV = 10
 # Fraction of generated readings deliberately pushed outside the normal

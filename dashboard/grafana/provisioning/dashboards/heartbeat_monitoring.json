@@ -4,9 +4,25 @@
   "tags": ["heartbeat", "monitoring"],
   "timezone": "browser",
   "schemaVersion": 39,
-  "version": 1,
-  "refresh": "10s",
+  "version": 2,
+  "refresh": "5s",
   "time": { "from": "now-1h", "to": "now" },
+  "templating": {
+    "list": [
+      {
+        "name": "customer_id",
+        "label": "Customer",
+        "type": "query",
+        "datasource": { "type": "postgres", "uid": "heartbeat-postgres" },
+        "query": "SELECT DISTINCT customer_id FROM heartbeat_readings ORDER BY 1",
+        "refresh": 1,
+        "sort": 1,
+        "multi": false,
+        "includeAll": false,
+        "current": { "selected": true, "text": "CUST-001", "value": "CUST-001" }
+      }
+    ]
+  },
   "panels": [
     {
       "id": 1,
@@ -120,6 +136,49 @@
         ]
       },
       "options": {}
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "Individual Customer Heart Rate — $customer_id",
+      "description": "Every reading recorded for the customer selected in the 'Customer' dropdown above. Same normal-range band (30-220 bpm) as the population chart, so one customer's pattern can be compared against it directly.",
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 20 },
+      "datasource": { "type": "postgres", "uid": "heartbeat-postgres" },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "time_series",
+          "rawSql": "SELECT reading_time AS time, heart_rate AS \"Heart rate\" FROM heartbeat_readings WHERE customer_id = '$customer_id' AND $__timeFilter(reading_time) ORDER BY reading_time"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {
+            "axisLabel": "Beats per minute (bpm)",
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 0,
+            "pointSize": 5,
+            "showPoints": "always",
+            "thresholdsStyle": { "mode": "area" }
+          },
+          "color": { "mode": "fixed", "fixedColor": "#2a78d6" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": null, "color": "#d03b3b" },
+              { "value": 30, "color": "#0ca30c" },
+              { "value": 220, "color": "#d03b3b" }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "single" }
+      }
     }
   ]
 }

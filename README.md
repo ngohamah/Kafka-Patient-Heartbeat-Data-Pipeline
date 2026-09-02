@@ -6,7 +6,7 @@ them in PostgreSQL for querying and (optionally) dashboarding.
 
 ## Architecture
 
-![Architecture diagram](docs/architecture.svg)
+![Architecture diagram](docs/architecture.png)
 
 1. **Data Simulator** (`src/data_generator.py`) invents a realistic heart-rate
    reading per customer on a timer.
@@ -110,6 +110,16 @@ manual setup needed.
 
 Application logs (including every dropped or flagged reading, with why) are
 written to `logs/app.log`.
+
+## Screenshots
+
+**Grafana dashboard** — population trend, anomaly count, anomaly detail table,
+and the per-customer drill-down:
+
+![Grafana dashboard](docs/screenshots/Screenshot%202026-09-02%20at%2003.32.35.png)
+
+See also `docs/sample_run_output.txt` for a captured terminal run of the
+producer, consumer, and a `psql` query showing successful ingestion.
 
 ## Running tests and lint
 

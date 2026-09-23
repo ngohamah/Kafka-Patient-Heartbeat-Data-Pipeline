@@ -129,9 +129,3 @@ pytest        # unit tests always run; the integration test in
               # docker-compose stack above is up
 ruff check .
 ```
-
-## Status
-
-See [implementationmap.md](implementationmap.md) for the current build phase
-and design decisions (not tracked in git — ask the project owner for the
-current roadmap if you need it).

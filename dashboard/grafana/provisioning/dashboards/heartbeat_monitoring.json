@@ -28,7 +28,7 @@
       "id": 1,
       "type": "timeseries",
       "title": "Average Customer Heart Rate Over Time",
-      "description": "The average heart rate across all customers, minute by minute. The green band is the normal range (30-220 beats per minute); red means the average has moved outside what's physiologically expected.",
+      "description": "The average heart rate across all customers, minute by minute. The green band is the normal range (60-160 beats per minute); red means the average has moved outside it.",
       "gridPos": { "h": 10, "w": 24, "x": 0, "y": 0 },
       "datasource": { "type": "postgres", "uid": "heartbeat-postgres" },
       "targets": [
@@ -53,8 +53,8 @@
             "mode": "absolute",
             "steps": [
               { "value": null, "color": "#d03b3b" },
-              { "value": 30, "color": "#0ca30c" },
-              { "value": 220, "color": "#d03b3b" }
+              { "value": 60, "color": "#0ca30c" },
+              { "value": 161, "color": "#d03b3b" }
             ]
           }
         },
@@ -69,7 +69,7 @@
       "id": 2,
       "type": "stat",
       "title": "Anomalous Readings In Selected Time Range",
-      "description": "Count of readings flagged as medically implausible (below 30 or above 220 bpm) in the current time window. Zero is good.",
+      "description": "Count of readings flagged as abnormal (below 60 or above 160 bpm) in the current time window. Zero is good.",
       "gridPos": { "h": 6, "w": 8, "x": 0, "y": 10 },
       "datasource": { "type": "postgres", "uid": "heartbeat-postgres" },
       "targets": [
@@ -125,8 +125,8 @@
                   "mode": "absolute",
                   "steps": [
                     { "value": null, "color": "#d03b3b" },
-                    { "value": 30, "color": "#0ca30c" },
-                    { "value": 220, "color": "#d03b3b" }
+                    { "value": 60, "color": "#0ca30c" },
+                    { "value": 161, "color": "#d03b3b" }
                   ]
                 }
               },
@@ -141,7 +141,7 @@
       "id": 4,
       "type": "timeseries",
       "title": "Individual Customer Heart Rate — $customer_id",
-      "description": "Every reading recorded for the customer selected in the 'Customer' dropdown above. Same normal-range band (30-220 bpm) as the population chart, so one customer's pattern can be compared against it directly.",
+      "description": "Every reading recorded for the customer selected in the 'Customer' dropdown above. Same normal-range band (60-160 bpm) as the population chart, so one customer's pattern can be compared against it directly.",
       "gridPos": { "h": 10, "w": 24, "x": 0, "y": 20 },
       "datasource": { "type": "postgres", "uid": "heartbeat-postgres" },
       "targets": [
@@ -168,8 +168,8 @@
             "mode": "absolute",
             "steps": [
               { "value": null, "color": "#d03b3b" },
-              { "value": 30, "color": "#0ca30c" },
-              { "value": 220, "color": "#d03b3b" }
+              { "value": 60, "color": "#0ca30c" },
+              { "value": 161, "color": "#d03b3b" }
             ]
           }
         },

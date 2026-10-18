@@ -1,7 +1,9 @@
 import random
 from datetime import datetime
 
+from src.config import MAX_VALID_HEART_RATE, MIN_VALID_HEART_RATE
 from src.data_generator import build_customer_pool, generate_batch, generate_reading
+from src.validation import is_anomalous
 
 
 def test_build_customer_pool_returns_requested_count():
@@ -41,5 +43,15 @@ def test_generate_reading_occasionally_produces_anomalies():
     readings = [generate_reading("CUST-001", rng=rng) for _ in range(2000)]
     heart_rates = [r["heart_rate"] for r in readings]
 
-    assert any(hr < 30 or hr > 220 for hr in heart_rates)
-    assert any(30 <= hr <= 220 for hr in heart_rates)
+    assert any(hr < MIN_VALID_HEART_RATE or hr > MAX_VALID_HEART_RATE for hr in heart_rates)
+    assert any(MIN_VALID_HEART_RATE <= hr <= MAX_VALID_HEART_RATE for hr in heart_rates)
+
+
+def test_anomaly_share_matches_configured_rate():
+    # Normal samples are kept in range, so the flagged share should track
+    # ANOMALY_RATE (3%) rather than also catching tails of the normal curve.
+    rng = random.Random(11)
+    heart_rates = [generate_reading("CUST-001", rng=rng)["heart_rate"] for _ in range(10000)]
+    flagged_share = sum(is_anomalous(hr) for hr in heart_rates) / len(heart_rates)
+
+    assert 0.02 < flagged_share < 0.04

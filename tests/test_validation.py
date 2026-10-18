@@ -37,11 +37,11 @@ def test_parse_message_rejects_missing_fields():
     ("heart_rate", "expected"),
     [
         (0, True),
-        (29, True),
-        (30, False),
+        (59, True),
+        (60, False),
         (75, False),
-        (220, False),
-        (221, True),
+        (160, False),
+        (161, True),
         (400, True),
     ],
 )

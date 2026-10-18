@@ -29,14 +29,19 @@ NORMAL_HEART_RATE_STDDEV = 10
 # Fraction of generated readings deliberately pushed outside the normal
 # range, so the consumer's anomaly validation has something to catch.
 ANOMALY_RATE = 0.03
-GENERATION_INTERVAL_SECONDS = float(os.environ.get("GENERATION_INTERVAL_SECONDS", "1.0"))
+GENERATION_INTERVAL_SECONDS = float(os.environ.get("GENERATION_INTERVAL_SECONDS", "5.0"))
 
-# --- Validation thresholds (physiologically implausible bounds) ---
-MIN_VALID_HEART_RATE = 30
-MAX_VALID_HEART_RATE = 220
+# --- Validation thresholds (normal resting range, newborn through adult) ---
+# Newborns rest at 100-160 bpm, adults at 60-100 bpm; the union of all age
+# groups is 60-160, so anything outside that is flagged as abnormal.
+MIN_VALID_HEART_RATE = 60
+MAX_VALID_HEART_RATE = 160
+# Extremes for deliberately generated anomalies (see src/data_generator.py).
+MIN_ANOMALY_HEART_RATE = 0
+MAX_ANOMALY_HEART_RATE = 300
 
 # --- Consumer batching (amortizes DB round-trips across many messages) ---
-BATCH_SIZE = int(os.environ.get("BATCH_SIZE", "20"))
+BATCH_SIZE = int(os.environ.get("BATCH_SIZE", "10"))
 BATCH_INTERVAL_SECONDS = float(os.environ.get("BATCH_INTERVAL_SECONDS", "5.0"))
 
 # --- Logging ---

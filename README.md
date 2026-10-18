@@ -13,7 +13,7 @@ them in PostgreSQL for querying and (optionally) dashboarding.
 2. **Kafka Producer** (`src/kafka_producer.py`) streams each reading onto the
    `heartbeat-readings` topic as it's generated.
 3. **Kafka Consumer** (`src/kafka_consumer.py` + `src/validation.py`) reads
-   each message, flags anything medically implausible (below 30 or above 220
+   each message, flags anything outside the normal range (below 60 or above 160
    beats per minute), and batches everything into Postgres.
 4. **PostgreSQL** (`sql/schema.sql`) keeps a permanent, indexed record of
    every reading, flagged readings included.

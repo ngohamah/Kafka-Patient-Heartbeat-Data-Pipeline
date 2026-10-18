@@ -11,6 +11,10 @@ from typing import TypedDict
 
 from src.config import (
     ANOMALY_RATE,
+    MAX_ANOMALY_HEART_RATE,
+    MAX_VALID_HEART_RATE,
+    MIN_ANOMALY_HEART_RATE,
+    MIN_VALID_HEART_RATE,
     NORMAL_HEART_RATE_MEAN,
     NORMAL_HEART_RATE_STDDEV,
     NUM_CUSTOMERS,
@@ -36,8 +40,17 @@ def _sample_heart_rate(rng: random.Random) -> int:
     the same way a real monitor occasionally reports a bad reading.
     """
     if rng.random() < ANOMALY_RATE:
-        return rng.choice([rng.randint(0, 29), rng.randint(221, 300)])
-    return round(rng.gauss(NORMAL_HEART_RATE_MEAN, NORMAL_HEART_RATE_STDDEV))
+        return rng.choice(
+            [
+                rng.randint(MIN_ANOMALY_HEART_RATE, MIN_VALID_HEART_RATE - 1),
+                rng.randint(MAX_VALID_HEART_RATE + 1, MAX_ANOMALY_HEART_RATE),
+            ]
+        )
+    # Resample until in range so normal readings are never flagged by mistake.
+    while True:
+        heart_rate = round(rng.gauss(NORMAL_HEART_RATE_MEAN, NORMAL_HEART_RATE_STDDEV))
+        if MIN_VALID_HEART_RATE <= heart_rate <= MAX_VALID_HEART_RATE:
+            return heart_rate
 
 
 def generate_reading(customer_id: str, rng: random.Random | None = None) -> HeartbeatReading:

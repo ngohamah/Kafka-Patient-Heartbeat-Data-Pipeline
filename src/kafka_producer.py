@@ -57,7 +57,7 @@ def run_producer(
 
     `producer` can be injected for testing; `num_ticks` bounds the loop for
     tests/demos. Leave both at their defaults to stream indefinitely, which
-    is the normal "real-time feed" mode described in the project brief.
+    is the normal "real-time feed" mode.
     """
     producer = producer or build_producer()
     customer_ids = build_customer_pool()

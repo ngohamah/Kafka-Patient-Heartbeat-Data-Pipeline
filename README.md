@@ -1,5 +1,7 @@
 # Real-Time Customer Heart Beat Monitoring System
 
+[![CI](https://github.com/ngohamah/Kafka-Patient-Heartbeat-Data-Pipeline/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/ngohamah/Kafka-Patient-Heartbeat-Data-Pipeline/actions/workflows/ci.yml)
+
 A small data-engineering pipeline that simulates heart-rate readings for a
 set of customers, streams them through Kafka, validates them, and stores
 them in PostgreSQL for querying and (optionally) dashboarding.
